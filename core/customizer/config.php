@@ -419,7 +419,7 @@ class Layers_Customizer_Config {
 				), // show attribution
 				'footer-layers-attribution-custom-text' => array(
 					'type'     => 'textarea',
-					'label'    => __( 'Customer Layers Attribution Text' , 'layerswp' ),
+					'label'    => __( 'Custom Layers Attribution Text' , 'layerswp' ),
 					'default' => '',
 				), // show attribution
 			); // footer-layers-attribution
