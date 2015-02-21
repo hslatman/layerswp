@@ -128,6 +128,10 @@ class Layers_Customizer_Config {
 							'title' =>__( 'Text' , 'layerswp' ),
 							'panel' => 'footer'
 						),
+						'footer-layers-attribution' => array(
+							'title' =>__( 'Attribution' , 'layerswp' ),
+							'panel' => 'footer'
+						),
 						'footer-scripts' => array(
 							'title' =>__( 'Additional Scripts' , 'layerswp' ),
 							'panel' => 'footer'
@@ -405,6 +409,15 @@ class Layers_Customizer_Config {
 					'default' => ' Made at the tip of Africa. &copy;'
 				), // copyright
 			); // footer-text
+			
+		// Footer -> Layout -> Attribution
+		$controls['footer-layers-attribution'] = array(
+				'footer-layers-attribution' => array(
+					'type'     => 'checkbox',
+					'label'    => __( 'Layers Attribution' , 'layerswp' ),
+					'default' => TRUE,
+				), // copyright
+			); // footer-layers-attribution
 
 		// Footer -> Layout -> Scripts
 		$controls['footer-scripts'] = array(

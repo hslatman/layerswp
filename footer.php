@@ -45,7 +45,12 @@
 			</div>
 			<?php do_action( 'layers_after_footer_inner' ); ?>
 
-			<?php _e( sprintf( '<a class="created-using-layers" tooltip="Created using Layers" href="%s"><span>Created using Layers</span></a>', 'http://www.layerswp.com' ) , 'layerswp' ); ?>
+			<?php 
+				$show_layers_attribution = layers_get_theme_mod( 'footer-layers-attribution' );
+				if ( $show_layers_attribution ) {
+					_e( sprintf( '<a class="created-using-layers" tooltip="Created using Layers" href="%s"><span>Created using Layers</span></a>', 'http://www.layerswp.com' ) , 'layerswp' );
+				}
+			?> 
 
 		</footer><!-- END / FOOTER -->
 		<?php do_action( 'layers_after_footer' ); ?>
