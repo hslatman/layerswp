@@ -416,7 +416,12 @@ class Layers_Customizer_Config {
 					'type'     => 'checkbox',
 					'label'    => __( 'Layers Attribution' , 'layerswp' ),
 					'default' => TRUE,
-				), // copyright
+				), // show attribution
+				'footer-layers-attribution-custom-text' => array(
+					'type'     => 'textarea',
+					'label'    => __( 'Customer Layers Attribution Text' , 'layerswp' ),
+					'default' => '',
+				), // show attribution
 			); // footer-layers-attribution
 
 		// Footer -> Layout -> Scripts
