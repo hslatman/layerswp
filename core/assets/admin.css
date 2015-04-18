@@ -173,7 +173,7 @@ div#widgets-right div[id*='obox-layers-builder']{
     }
     .layers-product-screenshot{
         height: 350px;
-        overflow: hidden;
+        overflow-x: hidden;
     }
     .layers-product-screenshot img{
         width: 100%;
@@ -598,7 +598,7 @@ div[id*='layers-widget'] .spinner{
 /*---------------------------*/
 /*- FORM ELEMENTS -----------*/
 .layers-form-item{
-	clear: left;
+    clear: left;
     padding: 0;
     margin: 0 0 15px;
 }
@@ -645,7 +645,7 @@ div[id*='layers-widget'] .spinner{
 .layers-form-item input[type="password"],
 .layers-form-item input[type="link"],
 .layers-form-item textarea {
-	display: block;
+    display: block;
     width: 100%;
     padding: 8px;
     margin: 0;
@@ -965,10 +965,10 @@ input[type=text].layers-color-selector.wp-color-picker{
         top: 5px;
         right: 100px;
         width: 220px;
-        max-height: 320px;
         background: #f5f5f5;
         border: 1px solid #ddd;
         border-radius: 3px;
+        max-height: 320px;
         overflow: hidden;
         overflow-y: scroll;
         visibility: hidden;
@@ -1548,18 +1548,20 @@ input[type=text].layers-color-selector.wp-color-picker{
 .layers-accordions-sortable{}
 .layers-accordions-sortable .layers-accordion-item{
     margin-bottom: 10px;
-    border: 1px solid #eee;
+    border: 1px solid #E8E8E8;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
 }
 .layers-accordions-sortable .layers-accordion-item:hover{
     border-color: #ccc;
 }
-.layers-accordions-sortable .layers-accordion-item:active{
-}
 .layers-accordions-sortable .layers-accordion-title{
     padding: 10px;
     border-top: none;
-    border-bottom:  1px solid #eee;
+    border-bottom: 1px solid transparent;
     cursor: move;
+}
+.layers-accordion-item.open .layers-accordion-title{
+    border-bottom: 1px solid #E7E7E7;
 }
 .layers-accordions-sortable .layers-accordion-title:after{
     line-height: 37px;
@@ -2066,22 +2068,6 @@ input[type=radio]:checked + .layers-settings-icon span{
 .layers-area-wrapper{
     margin-left: -20px;
 }
-.update-nag{
-    display: block;
-    position: relative;
-    z-index: 2;
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.update-nag + .layers-area-wrapper{
-    margin-top: -68px;
-    position: relative;
-    z-index: 1;
-}
-.update-nag + .layers-area-wrapper .layers-page-title{
-    padding-top: 128px;
-}
 .layers-page-title{
     background: #F1F1F1;
 }
@@ -2111,9 +2097,6 @@ input[type=radio]:checked + .layers-settings-icon span{
     padding: 0 0 60px;
     margin: 0 0 60px;
     border-bottom: 2px solid #ddd;
-}
-ul#adminmenu a.wp-has-current-submenu:after, ul#adminmenu > li.current > a.current:after{
-    border-right-color: #009DF3;
 }
 #toplevel_page_layers-dashboard .wp-menu-image:before {
     content: "\e62f";
@@ -2200,6 +2183,11 @@ ul#adminmenu a.wp-has-current-submenu:after, ul#adminmenu > li.current > a.curre
             margin: 0;
             border-bottom: 1px solid #e5e5e5;
         }
+        .layers-list li.tick{
+            padding-left: 36px;
+            background: url(images/copy-tick.png) 10px 50% no-repeat;
+        }
+
         .layers-list li:last-child{
             border-bottom: none;
         }
@@ -2321,6 +2309,7 @@ ul#adminmenu a.wp-has-current-submenu:after, ul#adminmenu > li.current > a.curre
         .layers-button.disable {
             background: #ADADAD;
             border-color: #9F9F9F;
+            color: #fff;
         }
 
         /*-----------------------*/
@@ -2367,18 +2356,19 @@ ul#adminmenu a.wp-has-current-submenu:after, ul#adminmenu > li.current > a.curre
         .layers-template-selector .layers-product:nth-child(2n+2){
             margin-right: 0;
         }
-        .layers-template-selector .layers-product:nth-child(3n+3){
-            margin-right: 4%;
-        }
         .layers-onboard-slide .layers-product:focus{
-            border-color: #2EA2CC;
+            border-color: #009eec;
         }
         .layers-onboard-slide .layers-product:focus .layers-product-name{
-            background: #2EA2CC;
+            background-color: #009eec;
+            border-top-color: #009eec;
             color: #fff;
         }
         .layers-onboard-slide .layers-product-actions{
             display: none;
+        }
+        .layers-template-selector img{
+            display: block;
         }
 
         /*------------------------------------------*/

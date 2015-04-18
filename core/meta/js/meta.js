@@ -24,14 +24,16 @@ jQuery(document).ready(function($) {
 		// Submit form
 		$that.closest('form').submit();
 
-		window.location = $that.attr('href');
+		if( 'auto-draft' !== $( '#original_post_status' ).val() ){
+			window.location = $that.attr('href');
+		}
 	});
 
 	$(document).on( 'change' , '#page_template', function(){
 		// "Hi Mom"
 		$that = jQuery(this);
 
-		$non_layers_boxes = '#postdivrich, #postbox-container-2, #postimagediv';
+		$non_layers_boxes = '#postdivrich';
 
 		// If we use the builder, show the "build" button
 		if('builder.php' == $that.val() ){
@@ -42,10 +44,14 @@ jQuery(document).ready(function($) {
 			$( $non_layers_boxes ).show();
 		}
 
-		 jQuery.ajax({
-			type: 'POST',
-			url: layers_meta_params.ajaxurl,
-			data: 'action=update_page_builder_meta&template=' + $that.val() + '&id=' + $('#post_ID').val()
-		});
+		layers_update_page_template();
 	});
+
+	function layers_update_page_template(){
+		jQuery.ajax({
+			type: 'POST',
+			url: ajaxurl,
+			data: 'action=update_page_builder_meta&template=' + $( '#page_template' ).val() + '&id=' + $('#post_ID').val() + '&nonce=' + layers_meta_params.nonce
+		});
+	}
 });

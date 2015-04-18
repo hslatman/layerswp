@@ -17,10 +17,10 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 			/**
 			* Widget variables
 			*
-		 	* @param  	varchar    		$widget_title    	Widget title
-		 	* @param  	varchar    		$widget_id    		Widget slug for use as an ID/classname
-		 	* @param  	varchar    		$post_type    		(optional) Post type for use in widget options
-		 	* @param  	varchar    		$taxonomy    		(optional) Taxonomy slug for use as an ID/classname
+		 	* @param  	string    		$widget_title    	Widget title
+		 	* @param  	string    		$widget_id    		Widget slug for use as an ID/classname
+		 	* @param  	string    		$post_type    		(optional) Post type for use in widget options
+		 	* @param  	string    		$taxonomy    		(optional) Taxonomy slug for use as an ID/classname
 		 	* @param  	array 			$checkboxes    	(optional) Array of checkbox names to be saved in this widget. Don't forget these please!
 		 	*/
 			$this->widget_title = __( 'Contact Details &amp; Maps' , 'layerswp' );
@@ -34,7 +34,7 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 				);
 
 	 		/* Widget settings. */
-			$widget_ops = array( 'classname' => 'obox-layers-' . $this->widget_id .'-widget', 'description' => 'This widget is used to display your ' . $this->widget_title . '.' );
+			$widget_ops = array( 'classname' => 'obox-layers-' . $this->widget_id .'-widget', 'description' => __( 'This widget is used to display your ') . $this->widget_title . '.' );
 
 			/* Widget control settings. */
 			$control_ops = array( 'width' => LAYERS_WIDGET_WIDTH_SMALL, 'height' => NULL, 'id_base' => LAYERS_THEME_SLUG . '-widget-' . $this->widget_id );
@@ -44,8 +44,8 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 
 			/* Setup Widget Defaults */
 			$this->defaults = array (
-				'title' => 'Find Us',
-				'excerpt' => 'We are based in one of the most beautiful places on earth. Come visit us!',
+				'title' => __( 'Find Us', 'layerswp' ),
+				'excerpt' => __( 'We are based in one of the most beautiful places on earth. Come visit us!', 'layerswp' ),
 				'contact_form' => NULL,
 				'address_shown' => NULL,
 				'show_google_map' => 'on',
@@ -156,8 +156,8 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 			</section>
 
 			<?php if ( !isset( $wp_customize ) ) {
-				wp_enqueue_script( LAYERS_THEME_SLUG . " -map-api","http://maps.googleapis.com/maps/api/js?sensor=false");
-				wp_enqueue_script( LAYERS_THEME_SLUG . "-map-trigger", get_template_directory_uri()."/core/widgets/js/maps.js", array( "jquery" ) );
+				wp_enqueue_script( LAYERS_THEME_SLUG . " -map-api","//maps.googleapis.com/maps/api/js?sensor=false");
+				wp_enqueue_script( LAYERS_THEME_SLUG . "-map-trigger", get_template_directory_uri()."/core/widgets/js/maps.js", array( "jquery" ), LAYERS_VERSION );
 			}  // Enqueue the map js ?>
 		<?php }
 
@@ -191,26 +191,20 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 
 			// Parse $instance
 			$instance = wp_parse_args( $instance, $instance_defaults );
-			extract( $instance, EXTR_SKIP ); ?>
-			<!-- Form HTML Here -->
-			<?php $this->design_bar(
-				'side', // CSS Class Name
-				array(
-					'name' => $this->get_field_name( 'design' ),
-					'id' => $this->get_field_id( 'design' ),
-				), // Widget Object
-				$instance, // Widget Values
-				array(
+			extract( $instance, EXTR_SKIP );
+
+			$design_bar_components = apply_filters( 'layers_' . $this->widget_id . '_widget_design_bar_components' , array(
 					'layout',
 					'fonts',
 					'custom',
 					'background',
 					'advanced'
-				), // Standard Components
-				array(
+				) );
+
+			$design_bar_custom_components = apply_filters( 'layers_' . $this->widget_id . '_widget_design_bar_custom_components' , array(
 					'display' => array(
 						'icon-css' => 'icon-display',
-						'label' => 'Display',
+						'label' => __( 'Display', 'layerswp' ),
 						'elements' => array(
 								'map_height' => array(
 									'type' => 'number',
@@ -245,7 +239,19 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 							)
 						)
 					)
-				);?>
+				);
+
+			$this->design_bar(
+				'side', // CSS Class Name
+				array(
+					'name' => $this->get_field_name( 'design' ),
+					'id' => $this->get_field_id( 'design' ),
+				), // Widget Object
+				$instance, // Widget Values
+				$design_bar_components, // Standard Components
+				$design_bar_custom_components // Add-on Components
+			); ?>
+
 			<div class="layers-container-large">
 
 				<?php $this->form_elements()->header( array(
@@ -341,28 +347,25 @@ if( !class_exists( 'Layers_Contact_Widget' ) ) {
 								)
 							); ?>
 							<div class="layers-content">
-							<p class="layers-form-item">
-								<?php echo $this->form_elements()->input(
-									array(
-										'type' => 'textarea',
-										'name' => $this->get_field_name( 'contact_form' ) ,
-										'id' => $this->get_field_id( 'contact_form' ) ,
-										'placeholder' =>  __( 'Contact form embed code' , 'layerswp' ),
-										'value' => ( isset( $contact_form ) ) ? $contact_form : NULL ,
-										'class' => 'layers-textarea'
-									)
-								); ?>
-								<small class="layers-small-note">
-									<?php _e( printf( 'Need to create a contact form? Try <a href="$1%s" target="ejejcsingle">Gravity Forms</a>', 'https://www.e-junkie.com/ecom/gb.php?cl=54585&c=ib&aff=221037' ) , 'layerswp' ); ?>
-								</small>
-							</p>
+								<p class="layers-form-item">
+									<?php echo $this->form_elements()->input(
+										array(
+											'type' => 'textarea',
+											'name' => $this->get_field_name( 'contact_form' ) ,
+											'id' => $this->get_field_id( 'contact_form' ) ,
+											'placeholder' =>  __( 'Contact form embed code' , 'layerswp' ),
+											'value' => ( isset( $contact_form ) ) ? $contact_form : NULL ,
+											'class' => 'layers-textarea'
+										)
+									); ?>
+									<small class="layers-small-note">
+										<?php _e( sprintf( 'Need to create a contact form? Try <a href="$1%s" target="ejejcsingle">Gravity Forms</a>', 'https://www.e-junkie.com/ecom/gb.php?cl=54585&c=ib&aff=221037' ) , 'layerswp' ); ?>
+									</small>
+								</p>
+							</div>
 						</div>
-					</div>
-
 				</section>
 			</div>
-
-
 
 		<?php } // Form
 	} // Class

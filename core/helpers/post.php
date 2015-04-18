@@ -11,10 +11,10 @@
 /**
 * Print post meta HTML
 *
-* @param    varchar         $post_id        ID of the post to use
+* @param    string         $post_id        ID of the post to use
 * @param    array           $display        Configuration arguments. (date, author, categories, tags)
-* @param    varchar         $wrapper        Type of html wrapper
-* @param    varchar         $wrapper_class  Class of HTML wrapper
+* @param    string         $wrapper        Type of html wrapper
+* @param    string         $wrapper_class  Class of HTML wrapper
 * @echo     string                          Post Meta HTML
 */
 
@@ -27,7 +27,7 @@ if( !function_exists( 'layers_post_meta' ) ) {
         }
 
         // If there are no items to display, return nothing
-        if( NULL == $display ) $display = array( 'date', 'author', 'categories', 'tags' );
+        if( !is_array( $display ) ) $display = array( 'date', 'author', 'categories', 'tags' );
 
         foreach ( $display as $meta ) {
             switch ( $meta ) {
@@ -97,7 +97,7 @@ if ( ! function_exists( 'layers_get_the_author' ) ) {
     function layers_get_the_author() {
         return sprintf( __( '<a href="%1$s" title="%2$s" rel="author">%3$s</a>' , 'layerswp' ),
             esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
-            esc_attr( sprintf( __( 'View all posts by %s', 'the-writer' ), get_the_author() ) ),
+            esc_attr( sprintf( __( 'View all posts by %s', 'layerswp' ), get_the_author() ) ),
             esc_attr( get_the_author() )
         );
     }
@@ -143,45 +143,41 @@ if( !function_exists( 'layers_comment' ) ) {
         <?php } ?>
 
         <?php $GLOBALS['lastdepth'] = $depth; ?>
-<?php }
+	<?php }
 } // layers_comment
 
 /**
  * Backs up builder pages as HTML
  */
 if( !function_exists( 'layers_backup_builder_pages' ) ) {
-
     function layers_backup_builder_pages(){
+
+        if( !check_ajax_referer( 'layers-backup-pages', 'layers_backup_pages_nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
 
         if( !isset( $_POST[ 'pageid' ] ) ) wp_die( __( 'You shall not pass' , 'layerswp' ) );
 
         // Get the post data
         $page_id = $_POST[ 'pageid' ];
-        $page = get_page( $page_id );
+        $page = get_post( $page_id );
 
         // Start the output buffer
         ob_start();
         dynamic_sidebar( 'obox-layers-builder-' . $page->ID );
 
-        $page_content = ob_get_clean();
+        $page_content = trim( ob_get_clean() );
         $page_content = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $page_content);
         $page_content = strip_tags( $page_content , '<p><b><i><strong><em><quote><a><h1><h2><h3><h4><h5><img><script>' );
+        $page_content = $page_content;
 
-        // New page arguments
-        $updated_page = array(
-            'ID'           => $page_id,
-            'post_content' => $page_content
-        );
+        $page_meta_key = 'layers_page_content_' . date( 'YmdHi' );
 
-        // Update the page into the database
-        wp_update_post( $updated_page );
+        update_post_meta( $page_id , $page_meta_key, $page_content );
 
         // Flush the output buffer
         ob_flush();
     }
-
-    add_action( 'wp_ajax_layers_backup_builder_pages', 'layers_backup_builder_pages' );
 } // layers_builder_page_backup
+add_action( 'wp_ajax_layers_backup_builder_pages', 'layers_backup_builder_pages' );
 
 /**
 *  Adjust the site title for static front pages
@@ -197,13 +193,13 @@ if( !function_exists( 'layers_post_class' ) ) {
 
         return $classes;
     }
-    add_filter( 'post_class' , 'layers_post_class' );
 }
+add_filter( 'post_class' , 'layers_post_class' );
 
 /**
  *  The following function creates a builder page
  *
- * @param varchar Page Title (optional)
+ * @param string Page Title (optional)
  * @return array Page ID
  */
 if( !function_exists( 'layers_create_builder_page' ) ) {
@@ -238,7 +234,7 @@ if( ! function_exists( 'layers_get_builder_pages' ) ) {
         global $layers_builder_pages;
 
         // Fetch Builder Pages
-        $layers_builder_pages = get_pages(array(
+        $layers_builder_pages = get_posts(array(
             'post_status' => 'publish,draft,private',
             'post_type' => 'page',
             'meta_key' => '_wp_page_template',
@@ -285,7 +281,6 @@ if( ! function_exists( 'layers_is_builder_page' ) ) {
  */
 
 if ( ! function_exists( 'layers_filter_admin_pages' ) ) {
-
     function layers_filter_admin_pages() {
         global $typenow;
 
@@ -302,10 +297,8 @@ if ( ! function_exists( 'layers_filter_admin_pages' ) ) {
             );
         }
     }
-
-    add_filter( 'pre_get_posts', 'layers_filter_admin_pages' );
 }
-
+add_filter( 'pre_get_posts', 'layers_filter_admin_pages' );
 
 /**
  * Change views links on wp-list-table - all, published, draft, etc - to maintain layers page filtering
@@ -313,21 +306,20 @@ if ( ! function_exists( 'layers_filter_admin_pages' ) ) {
  */
 
 if ( ! function_exists( 'layers_filter_admin_pages_views' ) ) {
-
     function layers_filter_admin_pages_views( $views ) {
-        foreach ($views as $view_key => $view_value ) {
-            $query_arg = '&filter=layers';
-            $view_value = preg_replace('/href=\'(http:\/\/[^\/"]+\/?)?([^"]*)\'/', "href='\\2$query_arg'", $view_value);
-            $views[$view_key] = $view_value;
+        global $typenow;
+
+        if ( 'page' == $typenow && isset( $_GET['filter'] ) && 'layers' == $_GET['filter'] ) {
+            foreach ($views as $view_key => $view_value ) {
+                $query_arg = '&filter=layers';
+                $view_value = preg_replace('/href=\'(http:\/\/[^\/"]+\/?)?([^"]*)\'/', "href='\\2$query_arg'", $view_value);
+                $views[$view_key] = $view_value;
+            }
         }
         return $views;
     }
-
-    add_filter( "views_edit-page", 'layers_filter_admin_pages_views' );
 }
-
-
-
+//add_filter( "views_edit-page", 'layers_filter_admin_pages_views' );
 
 /**
  * Add builder edit button to the admin bar
@@ -336,7 +328,6 @@ if ( ! function_exists( 'layers_filter_admin_pages_views' ) ) {
 */
 
 if( ! function_exists( 'layers_add_builder_edit_button' ) ) {
-
     function layers_add_builder_edit_button(){
         global $wp_admin_bar, $post;
 
@@ -351,24 +342,28 @@ if( ! function_exists( 'layers_add_builder_edit_button' ) ) {
             $wp_admin_bar->add_node( $args );
         }
     }
-
-    add_action( 'admin_bar_menu', 'layers_add_builder_edit_button', 90 );
 }
+add_action( 'admin_bar_menu', 'layers_add_builder_edit_button', 90 );
 
 // Output custom css to add Icon to admin bar edit button.
 if( ! function_exists( 'layers_add_builder_edit_button_css' ) ) {
     function layers_add_builder_edit_button_css() {
-        echo '<style>
-        #wp-admin-bar-my_page .ab-icon:before{
-            font-family: "layers-interface" !important;
-            content: "\e62f" !important;
-            font-size: 16px !important;
-        }
-        </style>';
+        global $pagenow;
+        if ( 'post.php' === $pagenow || ! is_admin() ) :
+            ?>
+            <style>
+            #wp-admin-bar-my_page .ab-icon:before{
+                font-family: "layers-interface" !important;
+                content: "\e62f" !important;
+                font-size: 16px !important;
+            }
+            </style>
+            <?php
+        endif;
     }
-    add_action('admin_head', 'layers_add_builder_edit_button_css');
-    add_action('wp_head', 'layers_add_builder_edit_button_css');
 }
+add_action('wp_print_styles', 'layers_add_builder_edit_button_css');
+add_action('admin_print_styles-post.php', 'layers_add_builder_edit_button_css');
 
 /**
 * Post Featured Media
@@ -377,7 +372,7 @@ if( ! function_exists( 'layers_add_builder_edit_button_css' ) ) {
 * @param int $size Media size to use
 * @param int $video oEmbed code
 *
-* @return   varchar     $media_output Feature Image or Video
+* @return   string     $media_output Feature Image or Video
 */
 
 if( !function_exists( 'layers_post_featured_media' ) ) {
@@ -405,7 +400,7 @@ if( !function_exists( 'layers_post_featured_media' ) ) {
             $output .= $featured_media;
         }
 
-        if( !isset( $post_meta[ 'video-url' ] ) && ( !is_single() && !is_page_template( 'template-blog.php' ) ) ){
+        if( !isset( $hide_href ) && !isset( $post_meta[ 'video-url' ] ) && ( !is_single() && !is_page_template( 'template-blog.php' ) ) ){
             $output = '<a href="' .get_permalink( $postid ) . '">' . $output . '</a>';
         }
 

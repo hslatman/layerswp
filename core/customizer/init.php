@@ -12,10 +12,13 @@ class Layers_Customizer {
 	private static $instance;
 
 	/**
-	*  Initiator
+	*  Retrieve static/global instance of the Layers Customizer
 	*/
 
-	public static function init(){
+	public static function get_instance(){
+		if ( ! isset( self::$instance ) ) {
+			self::$instance = new Layers_Customizer();
+		}
 		return self::$instance;
 	}
 
@@ -24,6 +27,13 @@ class Layers_Customizer {
 	*/
 
 	public function __construct() {
+	}
+
+	/**
+	 * Initializes the instance
+	 * @global type $wp_customize
+	 */
+	public function init() {
 		global $wp_customize;
 
 		// Setup some folder variables
@@ -41,16 +51,18 @@ class Layers_Customizer {
 
 			// Include control classes
 			require_once get_template_directory() . $controls_dir . 'base.php';
+			require_once get_template_directory() . $controls_dir . 'button.php';
+			require_once get_template_directory() . $controls_dir . 'checkbox.php';
+			require_once get_template_directory() . $controls_dir . 'code.php';
+			require_once get_template_directory() . $controls_dir . 'color.php';
+			require_once get_template_directory() . $controls_dir . 'font.php';
 			require_once get_template_directory() . $controls_dir . 'heading.php';
 			require_once get_template_directory() . $controls_dir . 'select.php';
 			require_once get_template_directory() . $controls_dir . 'select-icons.php';
 			require_once get_template_directory() . $controls_dir . 'select-images.php';
 			require_once get_template_directory() . $controls_dir . 'seperator.php';
-			require_once get_template_directory() . $controls_dir . 'font.php';
-			require_once get_template_directory() . $controls_dir . 'color.php';
-			require_once get_template_directory() . $controls_dir . 'checkbox.php';
-			require_once get_template_directory() . $controls_dir . 'css.php';
-			require_once get_template_directory() . $controls_dir . 'button.php';
+			require_once get_template_directory() . $controls_dir . 'text.php';
+			require_once get_template_directory() . $controls_dir . 'textarea.php';
 
 			// If we are in a builder page, update the Widgets title
 			$wp_customize->add_panel(
@@ -65,9 +77,10 @@ class Layers_Customizer {
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) , 50 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_print_styles' ) , 50 );
 			add_action( 'customize_controls_print_styles' , array( $this, 'admin_print_styles' ) );
+			add_action( 'customize_preview_init', array( $this, 'customizer_preview_enqueue_scripts' ) , 50 );
 
-			// Render header actions button(s)
-			add_action( 'customize_controls_print_footer_scripts' , array( $this, 'render_actions_buttons' ) );
+			// Render layers customizer menu
+			add_action( 'customize_controls_print_footer_scripts' , array( $this, 'render_customizer_menu' ) );
 		}
 	}
 
@@ -95,11 +108,27 @@ class Layers_Customizer {
 
 		// Localize Scripts
 		wp_localize_script( LAYERS_THEME_SLUG . '-admin-customizer' , "layers_customizer_params", array(
-									'ajaxurl' => admin_url( "admin-ajax.php" ) ,
-									'nonce' => wp_create_nonce( 'layers-customizer-actions' ),
-									'builder_page' => ( isset( $_GET[ 'layers-builder' ] ) ? TRUE : FALSE )
-								)
-							);
+				'nonce' => wp_create_nonce( 'layers-customizer-actions' ),
+				'builder_page' => ( isset( $_GET[ 'layers-builder' ] ) ? TRUE : FALSE )
+			)
+		);
+	}
+
+	/**
+	*  Enqueue Customizer Preview Scripts
+	*/
+
+	public function customizer_preview_enqueue_scripts(){
+
+		// Customizer Preview general
+		wp_enqueue_script(
+			LAYERS_THEME_SLUG . '-admin-customizer-preview',
+			get_template_directory_uri() . '/core/customizer/js/customizer-preview.js',
+			array(
+				'jquery',
+			),
+			LAYERS_VERSION
+		);
 	}
 
 	/**
@@ -152,22 +181,59 @@ class Layers_Customizer {
 		}
 	}
 
-	function render_actions_buttons() { ?>
-
-			<a class="customize-controls-layers-button customize-controls-layers-button-dashboard dashicons dashicons-plus layers-tooltip" href="<?php echo admin_url( 'admin.php?page=layers-add-new-page' ); ?>">
-				<span class="layers-tooltip-text layers-tooltip-text-large"><?php _e( 'Add new Layers page' , 'layerswp' ) ?></span>
-			</a>
-			<a class="customize-controls-layers-button customize-controls-layers-button-preview icon-display layers-tooltip" href="#" target="_blank">
-				<span class="layers-tooltip-text"><?php _e( 'Preview this page' , 'layerswp' ) ?></span>
-			</a>
-
-			<span class="layers-tooltip-text layers-tooltip-text-close layers-tooltip-text-tiny">
-				<?php _e( 'Close' , 'layerswp' ) ?>
-			</span>
-			<span class="layers-tooltip-text layers-tooltip-text-back">
-				<?php _e( 'Back to controls' , 'layerswp' ) ?>
-			</span>
-
+	function render_customizer_menu() {
+		?>
+		<div id="customize-controls-layers-actions">
+			
+			<ul class="layers-customizer-nav">
+				<li>
+					<span class="customize-controls-layers-button customize-controls-layers-button-dashboard-main" title="<?php esc_html( _e( 'Layers Dashboard' , 'layerswp' ) ) ?>" href="<?php echo admin_url( 'admin.php?page=layers-add-new-page' ); ?>"></span>
+					<ul>
+						<?php
+						// Construct the Layers Customizer Menu
+						$layers_customizer_menu = array(
+							'preview' => array(
+								'text'			=> __( 'Preview this page' , 'layerswp' ),
+								'link'			=> '#',
+								'icon_class'	=> 'icon-display',
+								'target'		=> '_blank',
+							),
+							'add-new-page' => array(
+								'text'			=> __( 'Add new Layers page' , 'layerswp' ),
+								'link'			=> admin_url( 'admin.php?page=layers-add-new-page' ),
+								'icon_class'	=> 'dashicons dashicons-plus',
+							),
+							'dashboard' => array(
+								'text'			=> __( 'Layers Dashboard' , 'layerswp' ),
+								'link'			=> admin_url( 'admin.php?page=layers-dashboard' ),
+								'icon_class'	=> 'layers-button-icon-dashboard',
+							),
+						);
+						
+						// Filter the Layers Customizer Menu
+						$layers_customizer_menu = apply_filters( 'layers_customizer_menu', $layers_customizer_menu );
+						
+						// Render the Layers Customizer Menu
+						foreach ( $layers_customizer_menu as $id => $args ) {
+							
+							$text = ( isset( $args['text'] ) && '' !== trim( $args['text'] ) ) ? esc_html( $args['text'] ) : '' ;
+							$icon_class = ( isset( $args['icon_class'] ) && '' !== trim( $args['icon_class'] ) ) ? esc_attr( $args['icon_class'] ) : '' ;
+							$href = ( isset( $args['link'] ) && '' !== trim( $args['link'] ) ) ? 'href="' . esc_url( $args['link'] ) . '"' : '' ;
+							$target = ( isset( $args['target'] ) && '' !== trim( $args['target'] ) ) ? 'target="' . esc_attr( $args['target'] ) . '"' : '' ;
+							?>
+							<li>
+								<a class="customize-controls-layers-button customize-controls-layers-button-<?php echo esc_attr( $id ); ?>" <?php echo $href; ?> <?php echo $target; ?> >
+									<i class="<?php echo $icon_class ?>"></i><?php echo $text ?>
+								</a>
+							</li>
+							<?php
+						}
+						?>
+					</ul>
+				</li>
+			</ul>
+			
+		</div>
 		<?php
 	}
 

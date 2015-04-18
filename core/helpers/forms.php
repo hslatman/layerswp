@@ -74,7 +74,6 @@ class Layers_Form_Elements {
 	*
 	* @param  	array     	$options() 	Existing option array if exists (optional)
 	* @param  	int 		$min 		Minimum number to start with
-	* @param  	int 		$min 		Minimum number to start with
 	* @param  	int 		$max 		End point, included in the options with <=
 	* @param  	int 		$increment 	How are we counting up?
 	* @return 	array 		$options() 	Array of options
@@ -141,6 +140,8 @@ class Layers_Form_Elements {
 		$input_props['name'] = ( NULL != $input->name ) ? 'name="' .  $input->name . '"' : NULL ;
 		$input_props['placeholder'] = ( NULL != $input->placeholder ) ? 'placeholder="' .  esc_attr( $input->placeholder ) . '"' : NULL ;
 		$input_props['class'] = ( NULL != $input->class ) ? 'class="' .  $input->class . '"' : NULL ;
+		$input_props['disabled'] = isset( $input->disabled ) ? 'disabled="disabled"' : NULL ;
+
 		if( NULL != $input->data ) { foreach( $input->data as $data_key => $data_value ){ $input_props[ 'data-' . $data_key ] = 'data-' . $data_key . '="' . esc_attr( $data_value ) . '"'; } }
 
 		// Switch our input type
@@ -156,6 +157,15 @@ class Layers_Form_Elements {
 				$input_props['max'] = ( isset( $input->max ) ) ? 'max="' .  $input->max . '"' : NULL ;
 				$input_props['step'] = ( isset( $input->step ) ) ? 'step="' .  $input->step . '"' : NULL ; ?>
 				<input type="number" <?php echo implode ( ' ' , $input_props ); ?> value="<?php echo $input->value; ?>" />
+			<?php break;
+			/**
+			* Range Inputs
+			*/
+			case 'range' :
+				$input_props['min'] = ( isset( $input->min ) ) ? 'min="' .  $input->min . '"' : NULL ;
+				$input_props['max'] = ( isset( $input->max ) ) ? 'max="' .  $input->max . '"' : NULL ;
+				$input_props['step'] = ( isset( $input->step ) ) ? 'step="' .  $input->step . '"' : NULL ; ?>
+				<input type="range" <?php echo implode ( ' ' , $input_props ); ?> value="<?php echo $input->value; ?>" />
 			<?php break;
 			/**
 			* Checkboxes - here we look for on/NULL, that's how WP widgets save them
@@ -179,7 +189,7 @@ class Layers_Form_Elements {
 			* Select boxes
 			*/
 			case 'select' : ?>
-				<select size="1" <?php echo implode ( ' ' , $input_props ); ?>>
+				<select size="1" <?php echo implode ( ' ' , $input_props ); ?> <?php if( isset( $input->multiple ) ) echo 'multiple="multiple"'; ?>>
 					<?php if( NULL != $input->placeholder ) { ?>
 						<option value=''><?php echo esc_html( $input->placeholder ); ?></option>
 					<?php } // if NULL != placeholder ?>
@@ -499,6 +509,16 @@ class Layers_Form_Elements {
 							<label for="<?php echo esc_attr( $input->id ) . '-' . $key; ?>"><?php echo esc_html( $label ); ?></label>
 						</div>
 					<?php } // foreach fields ?>
+				</div>
+
+			<?php break;
+			/**
+			* Free form HTML
+			*/
+			case 'html' : ?>
+
+				<div class="layers-row">
+					<?php echo $input->html; ?>
 				</div>
 
 			<?php break;

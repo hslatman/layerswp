@@ -26,6 +26,7 @@
  * 13 - Show/Hide linked elements
  * 14 - Run Initialisations
  * 15 - Layers Custom Easing
+ * 16 - Layers Pages Backups
  *
  * Author: Obox Themes
  * Author URI: http://www.oboxthemes.com/
@@ -314,16 +315,23 @@ jQuery(function($) {
 	/**
 	* 7 - Design Controller toggles
 	*/
-	$( document ).on( 'click' , '.widget .layers-visuals-wrapper li.layers-visuals-item a.layers-icon-wrapper' , function(e){
+	$( document ).on( 'click', function(e) {
+		var eventTarget = $(e.target);
+		// close any pop-ups that arent the target of the current click
+		$('.widget .layers-visuals-item.layers-active' ).not( eventTarget.closest('.layers-visuals-item') ).removeClass( 'layers-active' );
+	});
+
+	$( document ).on( 'click' , '.widget ul.layers-visuals-wrapper > li.layers-visuals-item > a.layers-icon-wrapper' , function(e){
 		e.preventDefault();
+		
 		// "Hi Mom"
 		$that = $(this);
-
-		// Close siblings
-		$(this).closest( '.layers-visuals-wrapper' ).find( '.layers-visuals-item.layers-active' ).not( $that.parent() ).removeClass( 'layers-active' );
-
+		
+		// Close Siblings
+		$that.parent( 'li.layers-visuals-item' ).siblings().not( $that.parent() ).removeClass( 'layers-active' );
+		
 		// Toggle active state
-		$that.parent().toggleClass( 'layers-active' );
+		$that.parent( 'li.layers-visuals-item' ).toggleClass( 'layers-active' );
 	});
 
 	$( document ).on( 'click' , '.widget .layers-visuals-wrapper li.layers-visuals-item label.layers-icon-wrapper' , function(e){
@@ -615,6 +623,60 @@ jQuery(function($) {
 		if ((t/=d/2) < 1) return c/2*t*t + b;
 		return -c/2 * ((--t)*(t-2) - 1) + b;
 	} });
+
+	/**
+	* 16 - Layers Backup Pages
+	*
+	* Backup Layers pages so that users can transfer themes
+	*/
+	var $complete_pages = 1;
+
+	function layers_backup_builder_page( $pageid, $page_li ){
+
+		var $total_pages = $( '.layers-list li' ).length;
+
+		$.post(
+			ajaxurl,
+			{
+				action: 'layers_backup_builder_pages',
+				pageid: $pageid,
+				layers_backup_pages_nonce: layers_admin_params.backup_pages_nonce
+			},
+			function(data){
+				// Check off this page
+				$page_li.removeClass( 'cross' ).addClass( 'tick' );
+
+				// Load Bar %
+				var $load_bar_width = $complete_pages/$total_pages;
+				var $load_bar_percent = 100*$load_bar_width;
+				$( '.layers-progress' ).animate({width: $load_bar_percent+"%"} ).text( Math.round($load_bar_percent)+'%');
+
+				if( 100 == $load_bar_percent ) $( '.layers-progress' ).delay(500).addClass( 'complete' ).text( layers_admin_params.backup_pages_success_message );
+
+				// Set Complete count
+				$complete_pages++;
+
+				if( $complete_pages <= $total_pages ){
+					var $next_page_li = $page_li.next();
+					var $pageid = $next_page_li.data( 'page_id' );
+
+					layers_backup_builder_page( $pageid, $next_page_li );
+				}
+			}
+		) // $.post
+	}
+
+	$(document).on( 'click', '#layers-backup-pages', function(){
+
+		// Adjust progress bar
+		$( '.layers-progress' ).removeClass( 'zero complete' ).css('width' , 0);
+
+		// "Hi Mom"
+		var $that = $( '.layers-list li' ).eq(0);
+		var $pageid = $that.data( 'page_id' );
+
+		layers_backup_builder_page( $pageid, $that );
+	});
 
 });
 

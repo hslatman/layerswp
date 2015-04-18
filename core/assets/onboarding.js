@@ -51,15 +51,18 @@ jQuery(function($) {
         // "Hi Mom"
         $that = $(this);
 
-        $form = $that.closest( '.layers-onboard-slide' );
+        if( $that.hasClass( 'disable' ) ) return;
 
-        $progress_indicator = $form.find( '.layers-save-progress' );
-        $progress_indicator_message = $progress_indicator.data( 'busy-message' )
-        $progress_indicator.text( $progress_indicator_message ).hide().removeClass( 'layers-hide' ).fadeIn(150);
+        $form = $that.closest( '.layers-onboard-slide' );
 
         $action = $form.find( 'input[name="action"]' ).val();
 
         if( 'layers_select_preset' == $action ) {
+
+            $progress_indicator = $form.find( '.layers-save-progress' );
+            $progress_indicator_message = $progress_indicator.data( 'busy-message' );
+
+            $that.text( $progress_indicator_message ).attr( 'disabled' , 'disabled' ).addClass( 'disable' );
 
             $id = $( 'input[name="layes-preset-layout"]:checked' ).val();
 
@@ -73,17 +76,17 @@ jQuery(function($) {
                 action: 'layers_create_builder_page_from_preset',
                 post_title: ( undefined == $( '#preset_page_title' ) ? false : $( '#preset_page_title' ).val() ),
                 widget_data: $.parseJSON( $widget_data ),
-                nonce: layers_widget_params.nonce
+                nonce: layers_onboarding_params.preset_layout_nonce
             };
 
             jQuery.post(
-                layers_onboarding_params.ajaxurl,
+                ajaxurl,
                 $page_data,
                 function(data){
 
                     $results = $.parseJSON( data );
 
-                    $form.find( '.layers-save-progress' ).text( onboardingi8n.step_done_message ).fadeOut(300);
+                    $that.text( onboardingi18n.step_done_message );
 
                     setTimeout( function(){ window.location.assign( $results.customizer_location ); }, 350 );
                 }
@@ -91,21 +94,25 @@ jQuery(function($) {
 
         } else if( undefined !== $action ) {
 
+            $progress_indicator = $form.find( '.layers-save-progress' );
+            $progress_indicator_message = $progress_indicator.data( 'busy-message' );
+            $progress_indicator.text( $progress_indicator_message ).hide().removeClass( 'layers-hide' ).fadeIn(150);
+
             $data = $form.find( 'input, textarea, select' ).serialize();
 
             $.post(
-                layers_onboarding_params.ajaxurl,
+                ajaxurl,
                 {
                     action: $action,
                     data: $data,
-                    nonce: layers_onboarding_params.nonce
+                    layers_onboarding_update_nonce: layers_onboarding_params.update_option_nonce
 
                 },
                 function(data){
 
                     $results = $.parseJSON( data );
                     if( true == $results.success ) {
-                        $form.find( '.layers-save-progress' ).text( onboardingi8n.step_done_message );
+                        $form.find( '.layers-save-progress' ).text( onboardingi18n.step_done_message );
 
                         setTimeout( function(){
                             $form.find( '.layers-save-progress' ).hide();

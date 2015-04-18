@@ -10,74 +10,26 @@
 class Layers_Widget_Migrator {
 
 	private static $instance;
-
 	/**
 	*  Initiator
 	*/
-
-	public static function init(){
+	public static function get_instance(){
+		if ( ! isset( self::$instance ) ) {
+			self::$instance = new Layers_Widget_Migrator();
+		}
 		return self::$instance;
 	}
-
 	/**
 	*  Constructor
 	*/
-
 	public function __construct() {
+	}
 
-		if( isset( $_GET[ 'layers-export' ] ) ) $this->create_export_file();
+	public function init() {
 
 		// Add current builder pages as presets
 		add_filter( 'layers_preset_layouts' , array( $this , 'add_builder_preset_layouts') );
 
-		// Add allowance for JSON to be added via the media uploader
-		add_filter( 'upload_mimes', array( $this, 'allow_json_uploads' ), 1, 1);
-	}
-
-	/**
-	*  Simple output of a JSON'd string of the widget data
-	*/
-
-	function create_export_file(){
-
-		// Make sur a post ID exists or return
-		if( !isset( $_GET[ 'post' ] ) ) return;
-
-		// Get the post ID
-		$post_id = $_GET[ 'post' ];
-
-		$post = get_post( $post_id );
-
-		$widget_data = json_encode( $this->export_data( $post ) );
-
-		$filesize = strlen( $widget_data );
-
-		// Headers to prompt "Save As"
-		header( 'Content-Type: application/json' );
-		header( 'Content-Disposition: attachment; filename=' . $post->post_name .'-' . date( 'Y-m-d' ) . '.json' );
-		header( 'Expires: 0' );
-		header( 'Cache-Control: must-revalidate' );
-		header( 'Pragma: public' );
-		header( 'Content-Length: ' . $filesize );
-
-		// Clear buffering just in case
-		@ob_end_clean();
-		flush();
-
-		// Output file contents
-		die( $widget_data );
-
-
-		// Stop execution
-		wp_redirect( admin_url( 'post.php?post=' . $post->ID . '&action=edit'  ) );
-
-	}
-
-	function allow_json_uploads( $mime_types ){
-		//Creating a new array will reset the allowed filetypes
-		$mime_types[ 'json|JSON' ] = 'application/json';
-
-		return $mime_types;
 	}
 
 	/**
@@ -86,6 +38,14 @@ class Layers_Widget_Migrator {
 
 	function get_translated_dir_uri(){
 		return str_replace('/', '\/', get_template_directory_uri() );
+	}
+
+	/**
+	*  Make sure that the stylesheet directory is nice ans clean for JSON
+	*/
+
+	function get_translated_stylesheet_uri(){
+		return str_replace('/', '\/', get_stylesheet_directory_uri() );
 	}
 
 	/**
@@ -100,7 +60,7 @@ class Layers_Widget_Migrator {
 					'title' => __( 'Application' , 'layerswp' ),
 					'screenshot' => 'http://layerswp.s3.amazonaws.com/preset-layouts/application.png',
 					'screenshot_type' => 'png',
-					'json' => esc_attr( '{"obox-layers-builder-555":{"layers-widget-slide-152":{"show_slider_arrows":"on","show_slider_dots":"on","slide_time":"","slide_height":"550","design":{"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"slide_ids":"575","slides":{"575":{"design":{"background":{"image":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/tile.png","color":"#efefef","repeat":"repeat","position":"center"},"featuredimage":"","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"large","color":""}},"title":"Incredible Application","excerpt":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae massa velit, eu laoreet massa.","link":"#","link_text":"Purchase Now"}}},"layers-widget-column-125":{"design":{"layout":"layout-boxed","gutter":"on","fonts":{"align":"text-center","size":"medium","color":""},"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"title":"Unbelievable Features","excerpt":"Our services run deep and are backed by over ten years of experience.","column_ids":"347,191","columns":{"347":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imageratios":"image-no-crop","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"width":"6","title":"Your feature title","excerpt":"Give us a brief description of the feature that you are promoting. Try keep it short so that it is easy for people to scan your page.","link":"","link_text":""},"191":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"width":"6","title":"Your feature title","excerpt":"Give us a brief description of the feature that you are promoting. Try keep it short so that it is easy for people to scan your page.","link":"","link_text":""}}},"layers-widget-slide-154":{"show_slider_arrows":"on","show_slider_dots":"on","slide_time":"","slide_height":"350","design":{"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"slide_ids":"701","slides":{"701":{"design":{"background":{"image":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/tile.png","color":"#efefef","repeat":"repeat","position":"center"},"featuredimage":"","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"title":"Purchase for $0.99","excerpt":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae massa velit, eu laoreet massa.","link":"#","link_text":"Purhcase Now"}}}}}' )
+					'json' => esc_attr( '{"obox-layers-builder-555":{"layers-widget-slide-152":{"show_slider_arrows":"on","show_slider_dots":"on","slide_time":"","slide_height":"550","design":{"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"slide_ids":"575","slides":{"575":{"design":{"background":{"image":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/tile.png","color":"#efefef","repeat":"repeat","position":"center"},"featuredimage":"","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"large","color":""}},"title":"Incredible Application","excerpt":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae massa velit, eu laoreet massa.","link":"#","link_text":"Purchase Now"}}},"layers-widget-column-125":{"design":{"layout":"layout-boxed","gutter":"on","fonts":{"align":"text-center","size":"medium","color":""},"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"title":"Unbelievable Features","excerpt":"Our services run deep and are backed by over ten years of experience.","column_ids":"347,191","columns":{"347":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imageratios":"image-no-crop","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"width":"6","title":"Your feature title","excerpt":"Give us a brief description of the feature that you are promoting. Try keep it short so that it is easy for people to scan your page.","link":"","link_text":""},"191":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"width":"6","title":"Your feature title","excerpt":"Give us a brief description of the feature that you are promoting. Try keep it short so that it is easy for people to scan your page.","link":"","link_text":""}}},"layers-widget-slide-154":{"show_slider_arrows":"on","show_slider_dots":"on","slide_time":"","slide_height":"350","design":{"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"slide_ids":"701","slides":{"701":{"design":{"background":{"image":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/tile.png","color":"#efefef","repeat":"repeat","position":"center"},"featuredimage":"","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-center","size":"medium","color":""}},"title":"Purchase for $0.99","excerpt":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae massa velit, eu laoreet massa.","link":"#","link_text":"Purchase Now"}}}}}' )
 				),
 			'contact-page' => array(
 					'title' => __( 'Contact Page' , 'layerswp' ),
@@ -130,7 +90,7 @@ class Layers_Widget_Migrator {
 					'title' => __( 'Portfolio Page' , 'layerswp' ),
 					'screenshot' => 'http://layerswp.s3.amazonaws.com/preset-layouts/portfolio-page.png',
 					'screenshot_type' => 'png',
-					'json' => esc_attr( '{"obox-layers-builder-565":{"layers-widget-column-136":{"design":{"layout":"layout-boxed","gutter":"on","fonts":{"align":"text-left","size":"medium","color":""},"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"title":"Our Amazing Work","excerpt":"Our services run deep and are backed by over ten years of experience.","column_ids":"552,654,592,854,454,939","columns":{"552":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"654":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"592":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"854":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"454":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"939":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""}}}}}' )
+					'json' => esc_attr( '{"obox-layers-builder-565":{"layers-widget-column-136":{"design":{"layout":"layout-boxed","gutter":"on","fonts":{"align":"text-left","size":"medium","color":""},"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"advanced":{"customclass":"","customcss":"","padding":{"top":"","right":"","bottom":"","left":""},"margin":{"top":"","right":"","bottom":"","left":""}}},"title":"Our Amazing Work","excerpt":"Our services run deep and are backed by over ten years of experience.","column_ids":"552,654,592,854,454,939","columns":{"552":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"654":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"592":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"854":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"454":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""},"939":{"design":{"background":{"image":"","color":"","repeat":"no-repeat","position":"center"},"featuredimage":"' . $this->get_translated_dir_uri() . '\/assets\/images\/preset-layouts\/demo-image.png","featuredvideo":"","imagealign":"image-top","fonts":{"align":"text-left","size":"small","color":""}},"width":"4","title":"Portfolio Item","excerpt":"Give us a brief description of the work you\'ve meticulously created.","link":"","link_text":""}}}}}' )
 				),
 			'video-page' => array(
 					'title' => __( 'Video Page' , 'layerswp' ),
@@ -181,9 +141,9 @@ class Layers_Widget_Migrator {
 	*
 	* Generates an image tag for the screenshot for use in the preset layout selector
 	*
-	* @param varchar URL to use for the screenshot
-	* @param varchar png (for static images) | dynamic (for existing pages)
-	* @return varchar <img> tag
+	* @param string URL to use for the screenshot
+	* @param string png (for static images) | dynamic (for existing pages)
+	* @return string <img> tag
 	*/
 	function generate_preset_layout_screenshot( $url = NULL, $type = 'screenshot' ){
 
@@ -493,7 +453,22 @@ class Layers_Widget_Migrator {
 
 		$i = $image_pieces[count($image_pieces)-1];
 
-		return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE %s", "%$i%" ) );
+		// Setup the Stylesheet directories to pick up the images from a local directory
+		$theme_image_dir = get_stylesheet_directory() . '/assets/preset-images/' . $i;
+		$theme_image_url = get_stylesheet_directory_uri() . '/assets/preset-images/' . $i;
+
+		$media_library_image = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE %s", "%$i%" ) );
+
+		// If the image we are looking for exists in the media library send it over
+		if( $media_library_image ) return $media_library_image;
+
+		// If the image we are looking for exists in the theme directory, use that instead
+		if( file_exists( $theme_image_dir ) ) {
+			return $this->get_attachment_id_from_url( media_sideload_image( $theme_image_url, 0 ) );
+		}
+
+		// If nothing is found, just return NULL
+		return NULL;
 	}
 
 	/**
@@ -553,6 +528,8 @@ class Layers_Widget_Migrator {
 
 	public function do_ajax_import(){
 
+		if( !check_ajax_referer( 'layers-migrator-import', 'nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
+
 		// Set the page ID
 		$import_data[ 'post_id' ] = $_POST[ 'post_id' ];
 
@@ -578,6 +555,8 @@ class Layers_Widget_Migrator {
 	*/
 
 	public function do_ajax_duplicate(){
+
+		if( !check_ajax_referer( 'layers-migrator-duplicate', 'nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
 
 		// We need a page title and post ID for this to work
 		if( !isset( $_POST[ 'post_title' ] ) || !isset( $_POST[ 'post_id' ]  ) ) return;
@@ -633,6 +612,8 @@ class Layers_Widget_Migrator {
 	public function create_builder_page_from_preset(){
 		global $layers_widgets;
 
+		if( !check_ajax_referer( 'layers-migrator-preset-layouts', 'nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
+
 		$check_builder_pages = layers_get_builder_pages();
 
 		if( isset( $_POST[ 'post_title' ] )  ){
@@ -643,7 +624,7 @@ class Layers_Widget_Migrator {
 
 		// Generate builder page and return page ID
 		$import_data[ 'post_id' ] = layers_create_builder_page( $post_title );
-		$new_page = get_page( $import_data[ 'post_id' ] );
+		$new_page = get_post( $import_data[ 'post_id' ] );
 
 		// Register Builder Sidebar
 		$layers_widgets->register_builder_sidebar( $import_data[ 'post_id' ] );
@@ -839,7 +820,6 @@ if( !function_exists( 'layers_builder_export_init' ) ) {
 
 	}
 }
-
 add_action( 'admin_head' , 'layers_builder_export_init', 10 );
 
 if( !function_exists( 'layers_builder_export_ajax_init' ) ) {
@@ -852,5 +832,48 @@ if( !function_exists( 'layers_builder_export_ajax_init' ) ) {
 		add_action( 'wp_ajax_layers_duplicate_builder_page', array( $layers_migrator, 'do_ajax_duplicate' ) );
 	}
 }
-
 add_action( 'init' , 'layers_builder_export_ajax_init' );
+
+
+/**
+*  Simple output of a JSON'd string of the widget data
+*/
+
+function layers_create_export_file(){
+
+	$layers_migrator = new Layers_Widget_Migrator();
+
+	// Make sur a post ID exists or return
+	if( !isset( $_GET[ 'post' ] ) ) return;
+
+	// Get the post ID
+	$post_id = $_GET[ 'post' ];
+
+	$post = get_post( $post_id );
+
+	$widget_data = json_encode( $layers_migrator->export_data( $post ) );
+
+	$filesize = strlen( $widget_data );
+
+	// Headers to prompt "Save As"
+	header( 'Content-Type: application/json' );
+	header( 'Content-Disposition: attachment; filename=' . $post->post_name .'-' . date( 'Y-m-d' ) . '.json' );
+	header( 'Expires: 0' );
+	header( 'Cache-Control: must-revalidate' );
+	header( 'Pragma: public' );
+	header( 'Content-Length: ' . $filesize );
+
+	// Clear buffering just in case
+	@ob_end_clean();
+	flush();
+
+	// Output file contents
+	die( $widget_data );
+
+	// Stop execution
+	wp_redirect( admin_url( 'post.php?post=' . $post->ID . '&action=edit'  ) );
+
+}
+if( isset( $_GET[ 'layers-export' ] ) ) {
+	add_action( 'init' , 'layers_create_export_file' );
+}
