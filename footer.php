@@ -45,7 +45,7 @@
 			</div>
 			<?php do_action( 'layers_after_footer_inner' ); ?>
 			<?php 
-				$show_layers_attribution = layers_get_theme_mod( 'show-layers-badge' );
+				$show_layers_attribution = layers_get_theme_mod( 'footer-layers-attribution' );
 				$custom_layers_attribution_text = layers_get_theme_mod( 'footer-layers-attribution-custom-text' );
 				if ( $show_layers_attribution && $custom_layers_attribution_text == '' ) {
 					_e( sprintf( '<a class="created-using-layers" tooltip="Created using Layers" href="%s"><span>Created using Layers</span></a>', 'http://www.layerswp.com' ) , 'layerswp' );
